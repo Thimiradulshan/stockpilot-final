@@ -1,0 +1,150 @@
+erDiagram
+    USERS ||--o{ PURCHASES : creates
+    USERS ||--o{ INVOICES : creates
+    USERS ||--o{ PAYMENTS : receives
+    USERS ||--o{ STOCK_MOVEMENTS : creates
+
+    CATEGORIES ||--o{ PRODUCTS : contains
+
+    PRODUCTS ||--o{ PRODUCT_SUPPLIER : supplied_by
+    SUPPLIERS ||--o{ PRODUCT_SUPPLIER : supplies
+
+    SUPPLIERS ||--o{ PURCHASES : receives
+    PURCHASES ||--|{ PURCHASE_ITEMS : contains
+    PRODUCTS ||--o{ PURCHASE_ITEMS : purchased
+
+    CUSTOMERS o|--o{ INVOICES : billed_to
+    INVOICES ||--|{ INVOICE_ITEMS : contains
+    PRODUCTS ||--o{ INVOICE_ITEMS : sold
+    INVOICES ||--o{ PAYMENTS : has
+
+    PRODUCTS ||--o{ STOCK_MOVEMENTS : changes
+
+    USERS {
+        bigint id PK
+        string name
+        string email UK
+        string role
+        string status
+    }
+
+    CATEGORIES {
+        bigint id PK
+        string name UK
+        text description
+        string status
+    }
+
+    SUPPLIERS {
+        bigint id PK
+        string name
+        string company
+        string phone
+        string email
+        text address
+        string status
+    }
+
+    PRODUCTS {
+        bigint id PK
+        bigint category_id FK
+        string name
+        string sku UK
+        decimal cost_price
+        decimal selling_price
+        decimal quantity
+        decimal reorder_level
+        string status
+    }
+
+    PRODUCT_SUPPLIER {
+        bigint product_id PK, FK
+        bigint supplier_id PK, FK
+        string supplier_product_code
+        decimal last_cost
+        boolean is_preferred
+    }
+
+    CUSTOMERS {
+        bigint id PK
+        string name
+        string phone
+        string email
+        text address
+        string status
+    }
+
+    PURCHASES {
+        bigint id PK
+        string purchase_number UK
+        bigint supplier_id FK
+        date purchase_date
+        decimal subtotal
+        decimal discount_amount
+        decimal tax_amount
+        decimal total_amount
+        string status
+        bigint created_by FK
+    }
+
+    PURCHASE_ITEMS {
+        bigint id PK
+        bigint purchase_id FK
+        bigint product_id FK
+        decimal quantity
+        decimal unit_cost
+        decimal discount_amount
+        decimal tax_amount
+        decimal line_total
+    }
+
+    INVOICES {
+        bigint id PK
+        string invoice_number UK
+        bigint customer_id FK nullable
+        date invoice_date
+        decimal subtotal
+        decimal discount_amount
+        decimal tax_rate
+        decimal tax_amount
+        decimal total_amount
+        string status
+        string payment_status
+        bigint created_by FK
+    }
+
+    INVOICE_ITEMS {
+        bigint id PK
+        bigint invoice_id FK
+        bigint product_id FK
+        decimal quantity
+        decimal unit_price
+        decimal discount_amount
+        decimal tax_amount
+        decimal line_total
+    }
+
+    PAYMENTS {
+        bigint id PK
+        bigint invoice_id FK
+        datetime payment_date
+        decimal amount
+        string payment_method
+        string reference
+        string idempotency_key
+        bigint received_by FK
+    }
+
+    STOCK_MOVEMENTS {
+        bigint id PK
+        bigint product_id FK
+        string movement_type
+        decimal quantity
+        decimal quantity_before
+        decimal quantity_after
+        string reference_type
+        bigint reference_id
+        string reason
+        text notes
+        bigint created_by FK
+    }
