@@ -98,11 +98,12 @@ role-based access model for administrators, sales operators and warehouse staff.
 
 ## Demo credentials
 
-| Role             | Email                  | Password   | Access                                       |
-|------------------|------------------------|------------|----------------------------------------------|
-| Administrator    | `admin@stockpilot.app` | `password` | All modules                                  |
-| Sales user       | `sales@stockpilot.app` | `password` | Sales, payments, statements, sales reports   |
-| Inventory user   | `stock@stockpilot.app` | `password` | Products, purchases, stock reports           |
+| Role             | Email                    | Password   | Access                                       |
+|------------------|--------------------------|------------|----------------------------------------------|
+| Administrator    | `admin@stockpilot.app`   | `password` | All modules                                  |
+| Administrator    | `admin@stockpilot.local` | `Admin123` | All modules                                  |
+| Sales user       | `sales@stockpilot.local` | `Sales123` | Sales, payments, statements, sales reports   |
+| Inventory user   | `stock@stockpilot.local` | `Stock123` | Products, purchases, stock reports           |
 
 Credentials come from configuration (`stockpilot.default_admin.email` /
 `DEFAULT_ADMIN_EMAIL`). The admin and demo users are created by
