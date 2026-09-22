@@ -58,6 +58,44 @@ class LedgerTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_admin_can_open_the_stock_ledger_print_view(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)
+            ->get(route('admin.ledger.index', ['print' => 1]))
+            ->assertOk()
+            ->assertSee('Stock Ledger');
+    }
+
+    public function test_ledger_print_view_honours_type_and_search_filters(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $product = Product::factory()->create([
+            'sku' => 'PRINT-SKU-1',
+        ]);
+
+        StockMovement::factory()->create([
+            'product_id' => $product->getKey(),
+            'movement_type' => StockMovementType::PURCHASE,
+            'quantity' => 4,
+            'quantity_before' => 0,
+            'quantity_after' => 4,
+            'created_by' => $admin->getKey(),
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.ledger.index', [
+                'print' => 1,
+                'type' => 'purchase',
+                'search' => 'PRINT-SKU-1',
+            ]))
+            ->assertOk()
+            ->assertSee('PRINT-SKU-1')
+            ->assertSee('Purchase');
+    }
+
     public function test_ledger_lists_movements_with_product_and_operator_columns(): void
     {
         $admin = User::factory()->admin()->create();

@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\Product;
+use App\Models\Supplier;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -101,6 +102,37 @@ class ReportsTest extends TestCase
                 ->set('section', $forbidden)
                 ->assertForbidden();
         }
+    }
+
+    public function test_admin_can_open_the_reports_print_view(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)
+            ->get(route('admin.reports.index', [
+                'section' => 'sales',
+                'print' => 1,
+            ]))
+            ->assertOk()
+            ->assertSee('Sales report');
+    }
+
+    public function test_purchases_print_view_honours_supplier_filter(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $supplier = Supplier::factory()->create([
+            'name' => 'Print Supplier',
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.reports.index', [
+                'section' => 'purchases',
+                'print' => 1,
+                'sup' => $supplier->id,
+            ]))
+            ->assertOk()
+            ->assertSee('Print Supplier');
     }
 
     public function test_csv_export_streams_a_download_for_the_active_section(): void

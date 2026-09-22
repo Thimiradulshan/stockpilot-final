@@ -160,6 +160,10 @@ private function dateRange(): array
 
         $viewData = [
             'data' => $data,
+            'from' => $this->from,
+            'to' => $this->to,
+            'type' => $this->type,
+            'search' => $this->search,
         ];
 
         if ($this->print) {

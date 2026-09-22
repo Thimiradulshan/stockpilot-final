@@ -46,6 +46,42 @@ class CustomerTest extends TestCase
         ]);
     }
 
+    public function test_customer_phone_must_be_a_valid_sri_lankan_mobile_number(): void
+    {
+        $user = User::factory()->admin()->create();
+
+        foreach (['077-123-4567', '0112345678', '771234567'] as $phone) {
+            $this->actingAs($user)->post(
+                route('admin.customers.store'),
+                [
+                    'name' => 'Bad Phone Customer',
+                    'phone' => $phone,
+                    'status' => 'active',
+                ],
+            )->assertSessionHasErrors('phone');
+        }
+
+        $this->assertDatabaseCount('customers', 0);
+    }
+
+    public function test_customer_accepts_valid_sri_lankan_mobile_numbers(): void
+    {
+        $user = User::factory()->admin()->create();
+
+        foreach (['0712345678', '+94712345678'] as $phone) {
+            $this->actingAs($user)->post(
+                route('admin.customers.store'),
+                [
+                    'name' => 'Valid Phone Customer ' . $phone,
+                    'phone' => $phone,
+                    'status' => 'active',
+                ],
+            )->assertRedirect(route('admin.customers.index'));
+        }
+
+        $this->assertDatabaseCount('customers', 2);
+    }
+
     public function test_sales_user_can_create_customer(): void
     {
         $user = User::factory()

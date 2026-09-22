@@ -56,7 +56,7 @@
 
         <select
             id="ledger_type"
-            wire:model.live="movementType"
+            wire:model.live="type"
             class="block w-full rounded-xl border border-sp-border bg-sp-surface px-3.5 py-2.5 text-sm text-sp-text outline-none transition focus:border-sp-primary focus:ring-4 focus:ring-sp-primary/10 dark:border-sp-border dark:bg-sp-surface-soft dark:text-sp-text dark:focus:border-sp-success"
         >
             <option value="">{{ __('All types') }}</option>

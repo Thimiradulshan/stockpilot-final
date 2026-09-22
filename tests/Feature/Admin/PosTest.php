@@ -362,7 +362,7 @@ class PosTest extends TestCase
             ->test(PosIndex::class)
             ->call('showQuickCustomer')
             ->set('quickName', 'Ann Perera')
-            ->set('quickPhone', '071-0000000')
+            ->set('quickPhone', '0710000000')
             ->call('saveQuickCustomer')
             ->assertOk();
 
@@ -371,7 +371,7 @@ class PosTest extends TestCase
         );
 
         $this->assertSame('Ann Perera', $customer->name);
-        $this->assertSame('071-0000000', $customer->phone);
+        $this->assertSame('0710000000', $customer->phone);
         $this->assertTrue($customer->isActive());
     }
 
@@ -441,6 +441,31 @@ class PosTest extends TestCase
             ->assertSet('paymentMethod', 'cash')
             ->assertSet('tendered', '0.00')
             ->assertOk();
+    }
+
+    public function test_new_sale_resets_the_cart_and_shows_visible_feedback(): void
+    {
+        $sales = User::factory()->sales()->create();
+
+        $product = Product::factory()
+            ->withQuantity(10)
+            ->create([
+                'selling_price' => 100.00,
+                'status' => 'active',
+            ]);
+
+        Livewire::actingAs($sales)
+            ->test(PosIndex::class)
+            ->call('addProduct', $product->id)
+            ->set('discountType', 'percent')
+            ->set('discountAmount', '10.00')
+            ->set('customerSearch', 'Someone')
+            ->call('newSale')
+            ->assertSet('cart', [])
+            ->assertSet('discountType', 'fixed')
+            ->assertSet('discountAmount', '0.00')
+            ->assertSet('successSale', null)
+            ->assertSet('notice', 'A new sale is ready. The cart is cleared.');
     }
 
     public function test_customer_search_lists_active_matches_only(): void

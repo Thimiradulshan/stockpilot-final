@@ -32,6 +32,7 @@
                 purchase_number: '',
                 supplier_id: '',
                 purchase_date: @js(now()->toDateString()),
+                discount_type: 'fixed',
                 discount_amount: '0.00',
                 tax_amount: '0.00',
                 notes: '',
@@ -67,6 +68,7 @@
                     purchase_number: '',
                     supplier_id: '',
                     purchase_date: @js(now()->toDateString()),
+                    discount_type: 'fixed',
                     discount_amount: '0.00',
                     tax_amount: '0.00',
                     notes: '',
@@ -165,10 +167,23 @@
                 );
             },
 
-            purchaseAdjustmentTotal() {
-                const headerDiscount = this.toNumber(
+            purchaseDiscountAmount() {
+                const subtotal = this.purchaseSubtotal();
+                const value = this.toNumber(
                     this.createForm.discount_amount
                 );
+
+                if (this.createForm.discount_type === 'percent') {
+                    return Math.round(
+                        (subtotal * value) / 100 * 100
+                    ) / 100;
+                }
+
+                return value;
+            },
+
+            purchaseAdjustmentTotal() {
+                const headerDiscount = this.purchaseDiscountAmount();
 
                 const headerTax = this.toNumber(
                     this.createForm.tax_amount
@@ -179,9 +194,7 @@
 
             purchaseTotal() {
                 const subtotal = this.purchaseSubtotal();
-                const discount = this.toNumber(
-                    this.createForm.discount_amount
-                );
+                const discount = this.purchaseDiscountAmount();
                 const tax = this.toNumber(
                     this.createForm.tax_amount
                 );

@@ -1,5 +1,5 @@
 <x-stockpilot.admin-page
-    x-data="productManager({ createProductOpen: @js($errors->any()) })"
+    x-data="productManager({ createProductOpen: {{ $errors->any() ? 'true' : 'false' }} })"
     escapeAction="closeProducts()"
 >
 

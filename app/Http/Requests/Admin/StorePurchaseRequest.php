@@ -59,6 +59,15 @@ public function rules(): array
                 'max:999999999999.99',
             ],
 
+            'discount_type' => [
+                'nullable',
+                'string',
+                Rule::in([
+                    'fixed',
+                    'percent',
+                ]),
+            ],
+
             'tax_amount' => [
                 'required',
                 'decimal:0,2',

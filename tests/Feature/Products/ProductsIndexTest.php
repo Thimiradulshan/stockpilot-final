@@ -20,6 +20,35 @@ class ProductsIndexTest extends TestCase
             ->assertRedirect(route('login'));
     }
 
+    public function test_products_page_renders_alpine_data_without_literal_blade_js(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)
+            ->get(route('admin.products.index'))
+            ->assertOk()
+            ->assertSee('createProductOpen: false')
+            ->assertDontSee('@js(');
+    }
+
+    public function test_products_page_opens_create_modal_when_validation_errors_exist(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $this->withSession([
+            'errors' => [
+                'default' => [
+                    'format' => ':message',
+                    'messages' => ['name' => ['Product name is required.']],
+                ],
+            ],
+        ])->actingAs($admin)
+            ->get(route('admin.products.index'))
+            ->assertOk()
+            ->assertSee('createProductOpen: true')
+            ->assertDontSee('@js(');
+    }
+
     public function test_admin_can_access_products_page(): void
     {
         $admin = User::factory()->admin()->create();

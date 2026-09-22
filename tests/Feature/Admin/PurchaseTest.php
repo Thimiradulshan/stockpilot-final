@@ -197,6 +197,115 @@ class PurchaseTest extends TestCase
         $this->assertSame('485.00', $purchase->total_amount);
     }
 
+    public function test_percentage_discount_is_computed_from_the_purchase_subtotal(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $supplier = Supplier::factory()->create();
+
+        $product = Product::factory()
+            ->withQuantity(0)
+            ->create([
+                'cost_price' => 100.00,
+                'status' => 'active',
+            ]);
+
+        $payload = [
+            'purchase_number' => 'PO-PERCENT-001',
+            'supplier_id' => $supplier->id,
+            'purchase_date' => now()->toDateString(),
+            'discount_type' => 'percent',
+            'discount_amount' => '10.00',
+            'tax_amount' => '0.00',
+            'notes' => null,
+            'items' => [
+                [
+                    'product_id' => $product->id,
+                    'quantity' => '5',
+                    'unit_cost' => '100.00',
+                    'discount_amount' => '0.00',
+                    'tax_amount' => '0.00',
+                ],
+            ],
+        ];
+
+        $this->actingAs($admin)
+            ->post(route('admin.purchases.store'), $payload)
+            ->assertRedirect(route('admin.purchases.index'));
+
+        $purchase = Purchase::query()
+            ->where('purchase_number', 'PO-PERCENT-001')
+            ->firstOrFail();
+
+        $this->assertSame('500.00', $purchase->subtotal);
+        $this->assertSame('50.00', $purchase->discount_amount);
+        $this->assertSame('0.00', $purchase->tax_amount);
+        $this->assertSame('450.00', $purchase->total_amount);
+    }
+
+    public function test_purchase_percentage_discount_over_100_is_rejected(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $supplier = Supplier::factory()->create();
+
+        $product = Product::factory()
+            ->withQuantity(0)
+            ->create([
+                'cost_price' => 100.00,
+                'status' => 'active',
+            ]);
+
+        $payload = [
+            'purchase_number' => 'PO-BAD-PERCENT-001',
+            'supplier_id' => $supplier->id,
+            'purchase_date' => now()->toDateString(),
+            'discount_type' => 'percent',
+            'discount_amount' => '150.00',
+            'tax_amount' => '0.00',
+            'notes' => null,
+            'items' => [
+                [
+                    'product_id' => $product->id,
+                    'quantity' => '1',
+                    'unit_cost' => '100.00',
+                    'discount_amount' => '0.00',
+                    'tax_amount' => '0.00',
+                ],
+            ],
+        ];
+
+        $this->actingAs($admin)
+            ->post(route('admin.purchases.store'), $payload)
+            ->assertSessionHas('error');
+
+        $this->assertDatabaseCount('purchases', 0);
+    }
+
+    public function test_invalid_discount_type_is_rejected(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $supplier = Supplier::factory()->create();
+
+        $product = Product::factory()
+            ->withQuantity(0)
+            ->create([
+                'status' => 'active',
+            ]);
+
+        $payload = $this->purchasePayload($product, $supplier->id, [
+            'purchase_number' => 'PO-BAD-DISCOUNT-TYPE-001',
+            'discount_type' => 'flat',
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.purchases.store'), $payload)
+            ->assertSessionHasErrors('discount_type');
+
+        $this->assertDatabaseCount('purchases', 0);
+    }
+
     public function test_duplicate_purchase_number_is_rejected(): void
     {
         $admin = User::factory()->admin()->create();

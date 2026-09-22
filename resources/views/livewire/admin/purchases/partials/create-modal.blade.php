@@ -92,20 +92,37 @@
                         </div>
 
                         <div>
-                            <label for="discount_amount" class="mb-1.5 block text-sm font-semibold text-sp-text">
+                            <label for="discount_type" class="mb-1.5 block text-sm font-semibold text-sp-text">
                                 {{ __('Header discount') }}
                             </label>
 
-                            <input
-                                id="discount_amount"
-                                name="discount_amount"
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                value="0.00"
-                                x-model="createForm.discount_amount"
-                                class="block w-full rounded-xl border border-sp-border bg-sp-surface px-3.5 py-2.5 text-sm tabular-nums text-sp-text outline-none transition focus:border-sp-primary focus:ring-4 focus:ring-sp-primary/10 dark:border-sp-border dark:bg-sp-surface-soft dark:text-sp-text dark:focus:border-sp-success"
-                            />
+                            <div class="flex flex-col gap-3 sm:flex-row">
+                                <select
+                                    id="discount_type"
+                                    name="discount_type"
+                                    x-model="createForm.discount_type"
+                                    class="block w-full rounded-xl border border-sp-border bg-sp-surface px-3.5 py-2.5 text-sm text-sp-text outline-none transition focus:border-sp-primary focus:ring-4 focus:ring-sp-primary/10 dark:border-sp-border dark:bg-sp-surface-soft dark:text-sp-text dark:focus:border-sp-success sm:w-48"
+                                >
+                                    <option value="fixed">{{ __('Fixed amount') }}</option>
+                                    <option value="percent">{{ __('Percentage') }}</option>
+                                </select>
+
+                                <input
+                                    id="discount_amount"
+                                    name="discount_amount"
+                                    type="number"
+                                    min="0"
+                                    :max="createForm.discount_type === 'percent' ? 100 : null"
+                                    step="0.01"
+                                    value="0.00"
+                                    x-model="createForm.discount_amount"
+                                    class="block w-full rounded-xl border border-sp-border bg-sp-surface px-3.5 py-2.5 text-sm tabular-nums text-sp-text outline-none transition focus:border-sp-primary focus:ring-4 focus:ring-sp-primary/10 dark:border-sp-border dark:bg-sp-surface-soft dark:text-sp-text dark:focus:border-sp-success"
+                                />
+                            </div>
+
+                            <p class="mt-1 text-xs text-sp-text-subtle">
+                                {{ __('Fixed discounts are deducted as a flat amount; percentage discounts are calculated from the subtotal.') }}
+                            </p>
                         </div>
 
                         <div>

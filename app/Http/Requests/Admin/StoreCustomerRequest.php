@@ -26,6 +26,7 @@ public function rules(): array
                 'nullable',
                 'string',
                 'max:30',
+                'regex:/^(?:\+94|0)7\d{8}$/',
             ],
             'email' => [
                 'nullable',
@@ -53,6 +54,7 @@ public function messages(): array
             'email.email' => 'Please enter a valid email address.',
             'email.max' => 'Email may not exceed 150 characters.',
             'phone.max' => 'Phone number may not exceed 30 characters.',
+            'phone.regex' => 'Please enter a valid mobile number, e.g. 0712345678 or +94712345678.',
             'address.max' => 'Address may not exceed 5000 characters.',
             'status.in' => 'Customer status must be active or inactive.',
         ];

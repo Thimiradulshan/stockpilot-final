@@ -41,6 +41,42 @@ class SupplierTest extends TestCase
         ]);
     }
 
+    public function test_supplier_phone_must_be_a_valid_sri_lankan_mobile_number(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        foreach (['077-123-4567', '0112345678', '771234567'] as $phone) {
+            $this->actingAs($admin)->post(
+                route('admin.suppliers.store'),
+                [
+                    'name' => 'Bad Phone Supplier',
+                    'phone' => $phone,
+                    'status' => 'active',
+                ],
+            )->assertSessionHasErrors('phone');
+        }
+
+        $this->assertDatabaseCount('suppliers', 0);
+    }
+
+    public function test_supplier_accepts_valid_sri_lankan_mobile_numbers(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        foreach (['0712345678', '+94712345678'] as $phone) {
+            $this->actingAs($admin)->post(
+                route('admin.suppliers.store'),
+                [
+                    'name' => 'Valid Phone Supplier ' . $phone,
+                    'phone' => $phone,
+                    'status' => 'active',
+                ],
+            )->assertRedirect(route('admin.suppliers.index'));
+        }
+
+        $this->assertDatabaseCount('suppliers', 2);
+    }
+
     public function test_stock_user_can_create_a_supplier(): void
     {
         $stock = User::factory()->stock()->create();

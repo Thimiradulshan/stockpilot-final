@@ -36,6 +36,7 @@
                 invoice_number: '',
                 customer_id: '',
                 invoice_date: @js(now()->toDateString()),
+                discount_type: 'fixed',
                 discount_amount: '0.00',
                 tax_rate: '0.00',
                 notes: '',
@@ -77,6 +78,7 @@
                     invoice_number: '',
                     customer_id: '',
                     invoice_date: @js(now()->toDateString()),
+                    discount_type: 'fixed',
                     discount_amount: '0.00',
                     tax_rate: '0.00',
                     notes: '',
@@ -188,11 +190,24 @@
                 ) / 100;
             },
 
-            salesTotal() {
+            salesDiscountAmount() {
                 const subtotal = this.salesSubtotal();
-                const discount = this.toNumber(
+                const value = this.toNumber(
                     this.createForm.discount_amount
                 );
+
+                if (this.createForm.discount_type === 'percent') {
+                    return Math.round(
+                        (subtotal * value) / 100 * 100
+                    ) / 100;
+                }
+
+                return value;
+            },
+
+            salesTotal() {
+                const subtotal = this.salesSubtotal();
+                const discount = this.salesDiscountAmount();
                 const tax = this.salesTaxAmount();
 
                 return Math.max(

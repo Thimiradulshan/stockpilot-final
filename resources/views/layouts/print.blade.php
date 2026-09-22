@@ -25,11 +25,11 @@
     </style>
 </head>
 <body class="antialiased bg-sp-surface text-sp-text">
-    @if (!$noContainer)
+    @if (empty($noContainer))
     <div class="print-container mx-auto max-w-4xl px-4 py-8">
     @endif
         {{ $slot }}
-    @if (!$noContainer)
+    @if (empty($noContainer))
     </div>
     @endif
 </body>

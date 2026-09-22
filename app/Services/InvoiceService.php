@@ -58,7 +58,7 @@ public function create(
             $discountType === 'percent'
             && $discountValue->isGreaterThan(100)
         ) {
-            throw new InvalidArgumentException(
+            throw new LogicException(
                 'Invoice discount percentage cannot exceed 100 percent.'
             );
         }

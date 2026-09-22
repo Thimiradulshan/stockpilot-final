@@ -866,6 +866,11 @@ protected function rowsForSection(string $section): array
             'customers' => $customers,
             'suppliers' => $suppliers,
             'reportTitle' => $this->reportTitle($section),
+            'from' => $this->from,
+            'to' => $this->to,
+            'groupBy' => $this->groupBy,
+            'customer' => $this->customer,
+            'supplier' => $this->supplier,
         ];
 
         if ($this->print) {

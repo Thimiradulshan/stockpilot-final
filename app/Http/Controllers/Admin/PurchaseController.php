@@ -36,6 +36,7 @@ public function store(
                 taxAmount: $data['tax_amount'],
                 actor: $request->user(),
                 notes: $data['notes'] ?? null,
+                discountType: $data['discount_type'] ?? 'fixed',
             );
         } catch (LogicException $e) {
             Log::warning('Purchase creation rejected', [

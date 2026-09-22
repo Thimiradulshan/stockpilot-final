@@ -887,6 +887,92 @@ private function invoicePayload(
         ], $overrides);
     }
 
+    public function test_percentage_discount_is_computed_from_the_invoice_subtotal(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $customer = Customer::factory()->create();
+
+        $product = Product::factory()
+            ->withQuantity(10)
+            ->create([
+                'selling_price' => 200.00,
+                'status' => 'active',
+            ]);
+
+        $payload = $this->invoicePayload($product, $customer->id, [
+            'invoice_number' => 'INV-PERCENT-001',
+            'discount_type' => 'percent',
+            'discount_amount' => '10.00',
+            'tax_rate' => '5.00',
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.sales.store'), $payload)
+            ->assertRedirect(route('admin.sales.index'));
+
+        $invoice = Invoice::query()
+            ->where('invoice_number', 'INV-PERCENT-001')
+            ->firstOrFail();
+
+        $this->assertSame('10.00', $invoice->discount_amount);
+        $this->assertSame('5.00', $invoice->tax_rate);
+        $this->assertSame('5.00', $invoice->tax_amount);
+        $this->assertSame('95.00', $invoice->total_amount);
+    }
+
+    public function test_invoice_percentage_discount_over_100_is_rejected(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $customer = Customer::factory()->create();
+
+        $product = Product::factory()
+            ->withQuantity(0)
+            ->create([
+                'selling_price' => 200.00,
+                'status' => 'active',
+            ]);
+
+        $payload = $this->invoicePayload($product, $customer->id, [
+            'invoice_number' => 'INV-BAD-PERCENT-001',
+            'discount_type' => 'percent',
+            'discount_amount' => '150.00',
+            'tax_rate' => '0.00',
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.sales.store'), $payload)
+            ->assertSessionHas('error');
+
+        $this->assertDatabaseCount('invoices', 0);
+    }
+
+    public function test_invalid_invoice_discount_type_is_rejected(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $customer = Customer::factory()->create();
+
+        $product = Product::factory()
+            ->withQuantity(0)
+            ->create([
+                'selling_price' => 200.00,
+                'status' => 'active',
+            ]);
+
+        $payload = $this->invoicePayload($product, $customer->id, [
+            'invoice_number' => 'INV-BAD-DISCOUNT-TYPE-001',
+            'discount_type' => 'flat',
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.sales.store'), $payload)
+            ->assertSessionHasErrors('discount_type');
+
+        $this->assertDatabaseCount('invoices', 0);
+    }
+
     public function test_invoice_with_recorded_payment_cannot_be_voided_even_if_status_drifts(): void
     {
         $admin = User::factory()->admin()->create();

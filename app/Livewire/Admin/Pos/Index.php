@@ -85,6 +85,12 @@ public ?array $successSale = null;
         $this->customerId = $this->walkInCustomerId;
     }
 
+    public function newSale(): void
+    {
+        $this->resetSale();
+        $this->notice = 'A new sale is ready. The cart is cleared.';
+    }
+
     public function updatedSearch(): void
     {
         $this->notice = '';
@@ -278,6 +284,7 @@ public ?array $successSale = null;
                     'nullable',
                     'string',
                     'max:30',
+                    'regex:/^(?:\+94|0)7\d{8}$/',
                 ],
                 'quickEmail' => [
                     'nullable',

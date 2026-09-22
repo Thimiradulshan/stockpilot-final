@@ -10,6 +10,7 @@ use App\Models\Supplier;
 use App\Models\User;
 use Brick\Math\BigDecimal;
 use Brick\Math\Exception\MathException;
+use Brick\Math\RoundingMode;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
@@ -34,6 +35,7 @@ public function create(
         string|int $taxAmount,
         User $actor,
         ?string $notes = null,
+        string $discountType = 'fixed',
     ): Purchase {
         $purchaseDate = $this->normalizePurchaseDate(
             $purchaseDate
@@ -44,10 +46,21 @@ public function create(
             $purchaseDate,
         );
 
-        $headerDiscount = $this->nonNegativeMoney(
+        $discountType = $this->normalizeDiscountType($discountType);
+
+        $discountValue = $this->nonNegativeMoney(
             $discountAmount,
             'Purchase discount amount'
         );
+
+        if (
+            $discountType === 'percent'
+            && $discountValue->isGreaterThan(100)
+        ) {
+            throw new LogicException(
+                'Purchase discount percentage cannot exceed 100 percent.'
+            );
+        }
 
         $headerTax = $this->nonNegativeMoney(
             $taxAmount,
@@ -69,7 +82,8 @@ public function create(
             $purchaseNumber,
             $purchaseDate,
             $normalizedItems,
-            $headerDiscount,
+            $discountValue,
+            $discountType,
             $headerTax,
             $normalizedNotes,
             $actor,
@@ -134,6 +148,12 @@ public function create(
             }
 
             unset($item);
+
+            $headerDiscount = $discountType === 'percent'
+                ? $subtotal
+                    ->multipliedBy($discountValue)
+                    ->dividedBy(100, 2, RoundingMode::HalfUp)
+                : $discountValue;
 
             if ($headerDiscount->isGreaterThan($subtotal)) {
                 throw new LogicException(
@@ -502,6 +522,20 @@ private function nonNegativeMoney(
         if ($value->isNegative()) {
             throw new InvalidArgumentException(
                 "{$field} cannot be negative."
+            );
+        }
+
+        return $value;
+    }
+
+
+private function normalizeDiscountType(string $discountType): string
+    {
+        $value = strtolower(trim($discountType));
+
+        if (! in_array($value, ['fixed', 'percent'], true)) {
+            throw new InvalidArgumentException(
+                'Purchase discount type must be either fixed or percent.'
             );
         }
 

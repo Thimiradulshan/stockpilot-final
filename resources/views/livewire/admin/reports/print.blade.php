@@ -1,3 +1,4 @@
+<div class="print-content">
 <div class="no-print mb-6 text-center">
     <button
         onclick="window.print()"
@@ -218,4 +219,5 @@
         </svg>
         {{ __('Print') }}
     </button>
+</div>
 </div>
